@@ -759,7 +759,7 @@ function renderForm(oficina){
 
       <fieldset>
         <legend>CEP <span class="req">*</span></legend>
-        <input type="text" name="cep" id="campo-cep" required placeholder="00000-000" inputmode="numeric" maxlength="9" oninput="formatCEP(this)" onblur="buscarCEP(this.value)">
+        <input type="text" name="cep" id="campo-cep" required placeholder="00000-000" inputmode="numeric" maxlength="9" oninput="formatCEP(this); buscarCEP(this.value);" onblur="buscarCEP(this.value)">
         <div class="field-error" id="err-cep-busca">CEP não encontrado — preencha rua e bairro manualmente.</div>
       </fieldset>
 
@@ -915,17 +915,17 @@ async function submitForm(oficinaId){
   const cpfRaw = fd.get('cpf')||'';
   const cpfDigits = cpfRaw.split('').filter(function(ch){ return ch >= '0' && ch <= '9'; }).join('');
   const errCpf = document.getElementById('err-cpf');
-  if(cpfDigits.length !== 11){ errCpf.classList.add('show'); return; }
+  if(cpfDigits.length !== 11){ errCpf.classList.add('show'); errCpf.scrollIntoView({behavior:'smooth', block:'center'}); return; }
   errCpf.classList.remove('show');
 
   const condicoes = [...document.querySelectorAll('input[name="condicao"]:checked')].map(i=>i.value);
   const errCondicao = document.getElementById('err-condicao');
-  if(condicoes.length===0){ errCondicao.classList.add('show'); return; }
+  if(condicoes.length===0){ errCondicao.classList.add('show'); errCondicao.scrollIntoView({behavior:'smooth', block:'center'}); return; }
   errCondicao.classList.remove('show');
 
   const restricoes = [...document.querySelectorAll('input[name="restricaoAlimentar"]:checked')].map(i=>i.value);
   const errRestricao = document.getElementById('err-restricao');
-  if(restricoes.length===0){ errRestricao.classList.add('show'); return; }
+  if(restricoes.length===0){ errRestricao.classList.add('show'); errRestricao.scrollIntoView({behavior:'smooth', block:'center'}); return; }
   errRestricao.classList.remove('show');
 
   if(!checkGateReady()){
@@ -935,7 +935,11 @@ async function submitForm(oficinaId){
     return;
   }
 
-  if(!form.reportValidity()) return;
+  if(!form.reportValidity()){
+    const invalid = form.querySelector(':invalid');
+    if(invalid) invalid.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
 
   btn.disabled = true;
   btn.textContent = 'Enviando...';
@@ -1088,7 +1092,7 @@ async function loadSubmissions(oficinaId){
 function priorityChips(r){
   const chips = [];
   if(r.mae_solo && r.mae_solo.indexOf('Sim')===0) chips.push('mãe solo');
-  if(r.cor_raca==='Preta'||r.cor_raca==='Parda'||r.cor_raca==='Indígena') chips.push('negra/indígena');
+  if(['Preta','Parda','Indígena'].indexOf(r.cor_raca)>-1) chips.push(r.cor_raca);
   if(['Homem trans','Mulher trans','Travesti','Não-binário'].indexOf(r.genero)>-1 ||
      (r.orientacao && ['Heterossexual','Prefiro não responder'].indexOf(r.orientacao)===-1)) chips.push('LGBTQIA+');
   if(r.idade==='65 anos ou mais') chips.push('pessoa idosa');
